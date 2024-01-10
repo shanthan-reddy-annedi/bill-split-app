@@ -1,10 +1,14 @@
 package com.example.billSplit.controllers;
 
+import com.example.billSplit.dtos.PayBill;
+import com.example.billSplit.entites.Payment;
 import com.example.billSplit.entites.Transaction;
+import com.example.billSplit.entites.User;
 import com.example.billSplit.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -16,7 +20,7 @@ public class TransactionController {
 
     @GetMapping("/bill/{billId}")
     public List<Transaction> getAllTransactionsOfABill(@PathVariable Long billId) {
-        return transactionService.getAllTransactions();
+        return transactionService.getAllTransactions(billId);
     }
 
     @GetMapping("/{transactionID}")
@@ -24,14 +28,17 @@ public class TransactionController {
         return transactionService.getTransactionById(transactionID);
     }
 
-    @PostMapping
-    public Transaction createTransaction(@RequestBody Transaction transaction) {
-        return transactionService.createTransaction(transaction);
+    @PostMapping("/{billId}")
+    public Payment createTransaction(@RequestBody PayBill payBill, @PathVariable Long billId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return transactionService.createTransaction(payBill, user, billId);
     }
 
     @PutMapping("/{transactionID}")
-    public Transaction updateTransaction(@PathVariable Long transactionID, @RequestBody Transaction transaction) {
-        return transactionService.updateTransaction(transactionID, transaction);
+    public Transaction updateTransaction(@PathVariable Long transactionID,
+    @RequestBody Transaction transaction) {
+    return transactionService.updateTransaction(transactionID, transaction);
     }
 
     @DeleteMapping("/{transactionID}")
